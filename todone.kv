@@ -1,0 +1,235 @@
+#:import AsyncImage kivy.uix.image.AsyncImage
+#:import Task taskfunctions.Task
+
+<Space@Label>:
+
+<BG@FloatLayout>:
+	canvas.before:
+		Color:
+			rgba: 0.176, 0.243, 0.314, 1.0
+		Rectangle:
+			pos: self.pos
+			size: self.size
+
+<TodoInput@TextInput>:
+	background_normal:'data/images/src/textinput.png'
+	background_active:'data/images/src/textinput_active.png'
+	background_disabled_normal:'data/images/src/textinput_disabled.png'
+	background_disabled_active:'data/images/src/textinput_disabled.png'
+	font_name: 'data/fonts/Lato-Regular.ttf'
+	font_size: '20sp'
+	cursor_color: 0.498, 0.549, 0.552,1.0
+	foreground_color: 0.204, 0.286, 0.369, 1.0
+	selection_color: 0.925, 0.941, 0.937, 0.5
+	padding: '8dp', '8dp'
+	border: 10, 10, 10, 10
+
+<TodoButton@Button>:
+	font_name: 'data/fonts/Lato-Bold.ttf'
+	font_size: '22sp'
+	padding: '8dp','8dp'
+	border: 10,10,10,10
+	background_disabled_normal:'data/images/src/but_disabled.png'
+	background_disabled_down:'data/images/src/but_disabled.png'
+
+<CompleteButton@TodoButton>
+
+<TodoSpinner@Spinner>:
+	padding: '8dp','8dp'
+	center: 0.5, 0.5
+	background_normal:'data/images/src/but_blue.png'
+
+<TodoLabel@Label>:
+	size_hint_x: None
+	width: self.texture_size[0]
+	font_size: '20sp'
+	color: 0.404, 0.522, 0.549, 1.0
+	font_name: 'data/fonts/Lato-Heavy.ttf'
+
+<SearchBox@BoxLayout>:
+	padding:'8dp','8dp'
+	orientation:'horizontal'
+	spacing:'8dp'
+	canvas.before:
+		Color:
+			rgba: 0.3,0.6,0.1, 1
+		Rectangle:
+			pos: self.pos
+			size: self.size
+	TextInput:
+		hint_text:'Search'
+		font_name: 'data/fonts/Lato-Regular.ttf'
+		font_size: '18sp'
+		background_color:(0,0,0,0)
+		multiline:False
+	Image:
+		size_hint:None, None
+		size:'32dp','32dp'
+		source:'data/images/src/search.png'
+
+<TaskWidget>:
+	id: task_w
+	orientation: 'vertical'
+	but_add_g:but_add_g
+	but_del:but_del
+	size_hint_y: None
+	# height: '110dp'
+	canvas:
+		Color:
+			rgba: 0.925, 0.941, 0.937, 1.0
+		RoundedRectangle:
+			pos: self.pos
+			size: self.size
+			radius: 10,10,10,10	
+	BoxLayout:
+		id: task_top
+		orientation: 'horizontal'
+		TodoInput:
+			id: task_input
+			multiline: False
+			text: 'Default text box values'
+			text_size: self.size
+			size_hint_x: 1
+			size_hint_min_x: 100
+			text_size: (self.width, None)
+			size_hint_y: 0.9 
+			focus: True
+		TodoLabel:
+			id: lbl_freq
+			text: root.ids['freq_spin'].text
+			size_hint_x: 0.25
+			size_hint_min_x: 60
+			size_hint_max_x: 200
+			size_hint_y: 1
+			height: self.texture_size[1]
+		TodoLabel:
+			id: lbl_group
+			text: root.ids['group_spin'].text
+			size_hint_x: 0.25
+			size_hint_min_x: 60
+			size_hint_max_x: 200
+			size_hint_y: 1
+			height: self.texture_size[1]
+		TodoButton:
+			id: btn_complete
+			text: 'Mark as Complete'
+			size_hint_x: 0.25
+			size_hint_min_x: 112
+			size_hint_max_x: 200
+		    text_size: self.width, None
+			background_normal: ''
+			background_color: (0.24, 0.84, 0.548, 1)
+			on_release:root.dispatch('on_complete')			
+	BoxLayout:
+		id: task_btm
+		orientation: 'horizontal'
+		spacing:'16dp'
+		# size_hint_y: None
+		# height: root.height*.45 if root.edit else 0
+		TodoSpinner:
+			id: freq_spin
+			text: 'Once'
+			values: Task.frequency_list
+			size_hint_x: 0.75
+			size_hint_y: 0.9
+		TodoSpinner:
+			id: group_spin
+			text: 'None'
+			values: Task.group_list
+			size_hint_x: 0.75
+			size_hint_y: 0.9
+		TodoButton:
+			id: but_add_g
+			size_hint_x: None
+			size_hint_y: 0.9
+			text: 'Add Group'
+			width: self.texture_size[0]*1.2
+			border:8,8,8,8
+			background_normal:'data/images/src/but_turq.png'
+			background_down:'data/images/src/but_turq_down.png'
+			on_release:root.dispatch('on_edit_group')			
+		Space:
+			id: edit_spc
+			size_hint_x: 1
+			size_hint_y: 1
+		TodoButton:
+			id: but_del
+			size_hint: None, None
+			pos_hint: {'right': 1}
+			size: '36dp', '36dp'
+			border:8,8,8,8
+			background_normal:'data/images/src/but_del.png'
+			background_down:'data/images/src/but_del_down.png'
+			on_release:root.dispatch('on_delete')
+
+<TaskWidgetContainer@ScrollView>:
+	StackLayout:
+		id:container
+		size_hint_y:None
+		size_hint_x:1
+		height:self.minimum_height
+		orientation:'lr-tb'
+		padding:'16dp','0dp','16dp','16dp'
+		spacing:'16dp'
+
+<AddGroupPopup@Popup>:
+	size_hint: 0.2, 0.2
+	title: ''
+	separator_height: 0
+	BoxLayout:
+		orientation: 'vertical'
+		spacing: '12dp'
+		TodoInput:
+			id: grp_input
+			hint_text: 'Type Group Name'
+			multiline: False
+			size_hint_y: None
+			height: self.minimum_height
+			padding: '8dp'
+		TodoButton:
+			id: but_add_g
+			size_hint_x: 1
+			size_hint_y: 0.9
+			text: f'Create {grp_input.text} Group'
+			border:8,8,8,8
+			background_normal:'data/images/src/but_turq.png'
+			background_down:'data/images/src/but_turq_down.png'
+			on_release: root.dispatch('on_add_group'); root.dismiss()
+
+<TopBar@BoxLayout>:
+	orientation:'horizontal'
+	spacing:'16dp'
+	TodoButton:
+		size_hint:None, None
+		size:'48dp', '48dp'
+		border:10,10,10,10
+		background_normal:'data/images/src/but_new.png'
+		background_down:'data/images/src/but_new_down.png'
+		on_release: root.dispatch('on_add_taskwidget')
+	Space:
+	# SearchBox:
+	#     width:'240dp'
+	#     size_hint_x:None
+	# TodoButton:
+	# 	size_hint:None, None
+	# 	size:'96dp', '48dp'
+	# 	text:'Quit'
+	# 	background_normal:'data/images/src/but_red.png'
+	# 	background_down:'data/images/src/but_red_down.png'
+	# 	on_release:root.dispatch('on_quit_pressed')
+
+<TaskScreen>:
+	BG:
+		BoxLayout:
+			orientation:'vertical'
+			TopBar:
+				size_hint_y: None
+				height:'64dp'
+				padding:'16dp','16dp','16dp','0dp'
+				on_add_taskwidget: root.new_task()
+				# on_quit_pressed: root.pre_quit_exec()
+			Space:
+				size_hint_y:None
+				height:'16dp'
+			TaskWidgetContainer:
+				id: task_container
