@@ -1,6 +1,9 @@
 import time
 
+from ruamel.yaml import YAML, yaml_object
 
+
+@yaml_object(YAML())
 class Task(object):
     group_list = ['None']
     status_list = ['normal', 'edit', 'archived']
@@ -15,7 +18,8 @@ class Task(object):
         self._status = 'edit'
         self._complete = False
 
-    def _get_time_now(self):
+    @staticmethod
+    def _get_time_now():
         month = {1: 'Jan', 2: 'Feb', 3: 'Mar', 4: 'Apr', 5: 'May', 6: 'Jun', 7: 'Jul', 8: 'Aug', 9: 'Sep', 10: 'Oct',
                  11: 'Nov', 12: 'Dec'}
         now = time.localtime(time.time())
@@ -88,7 +92,7 @@ class Task(object):
 
     @status.setter
     def status(self, status):
-        if status in status_list:
+        if status in self.status_list:
             self._status = status
 
     # create event that will trigger the view change for edit or archival
@@ -105,6 +109,7 @@ class Task(object):
             raise TypeError(f'Complete values must be boolean, not {value}, type {type(value)}')
 
 
+@yaml_object(YAML())
 class TaskCollection(object):
 
     def __init__(self):
@@ -132,6 +137,14 @@ class TaskCollection(object):
                 break
 
 # -----------------
+# from pathlib import Path
 # t = Task('First Task')
 # Task.add_group('First Group')
 # print(Task.group_list)
+# tc = TaskCollection()
+# tc._add_task(t)
+# print(tc)
+# yaml = YAML()
+# yaml.dump(tc, Path('test_dump.yml'))
+# to = yaml.load(Path('test_dump.yml'))
+# print(to.tasks[-1].text)
