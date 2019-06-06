@@ -35,7 +35,6 @@ class todoneApp(App):
         YAML().dump(task_collection, store_file_path)
 
     def load_data(self, store_file_path):
-        # TODO tasks are only saved if they were created in that session.
         if store_file_path.is_file():
             task_c = YAML().load(store_file_path)
             self.taskscreen.refill_task_collection(task_c)

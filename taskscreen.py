@@ -8,12 +8,13 @@ from taskfunctions import TaskCollection, Task
 
 class TaskScreen(Screen):
 
-    # TODO check for hidden recurring tasks on load, status flag, schedule flag switch
+    # TODO check for hidden repeating tasks on load, add refresh button?
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.task_collection = TaskCollection()
-        print('creating task screen')
+        self.scheduled_tasks = TaskCollection()
+        # print('creating task screen')
         self.archive = TaskCollection()
 
     def refill_task_collection(self, task_collection):

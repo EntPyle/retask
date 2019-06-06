@@ -12,11 +12,11 @@ class Task(object):
     def __init__(self, text='', id_num=1, group='', frequency='Once'):
         self.id = id_num
         self._text = text
-        self.time = self._get_time_now()
+        self._init_time = self._edit_time = self.self._get_time_now()
         self._group = group
         self._frequency = frequency
         self._status = 'edit'
-        self._complete = False
+        # self._complete = False # TODO delete if not needed
 
     @staticmethod
     def _get_time_now():
@@ -31,10 +31,7 @@ class Task(object):
         stamp = hour + ':' + minute + ' ' + month + ' ' + day + ' ' + year
         return stamp
 
-    def archive_task(self):
-        pass
-
-    # move task to archive list
+    # TODO create function to set next occurency time based on frequency and time of completion
 
     @classmethod
     def add_group(cls, group_name):
@@ -65,7 +62,7 @@ class Task(object):
     def text(self, text):
         if self._text != text:
             self._text = text
-            self.time = self._get_time_now()
+            self._edit_time = self._get_time_now()
 
     @property
     def group(self):
@@ -75,7 +72,7 @@ class Task(object):
     def group(self, group):
         if self._group != group:
             self._group = group
-            self.time = self._get_time_now()
+            self._edit_time = self._get_time_now()
 
     @property
     def frequency(self):
@@ -85,28 +82,30 @@ class Task(object):
     def frequency(self, freq):
         if freq in self.frequency_list:
             self._frequency = freq
+            self._edit_time = self._get_time_now()
 
     @property
     def status(self):
         return self._status
 
     @status.setter
+    # may not be needed
     def status(self, status):
         if status in self.status_list:
             self._status = status
+            self._edit_time = self._get_time_now()
 
-    # create event that will trigger the view change for edit or archival
-
-    @property
-    def complete(self):
-        return self._complete
-
-    @complete.setter
-    def complete(self, value):
-        if type(value) is bool:
-            self._complete = value
-        else:
-            raise TypeError(f'Complete values must be boolean, not {value}, type {type(value)}')
+    # TODO delete if not needed
+    # @property
+    # def complete(self):
+    #     return self._complete
+    #
+    # @complete.setter
+    # def complete(self, value):
+    #     if type(value) is bool:
+    #         self._complete = value
+    #     else:
+    #         raise TypeError(f'Complete values must be boolean, not {value}, type {type(value)}')
 
 
 @yaml_object(YAML())
@@ -117,11 +116,13 @@ class TaskCollection(object):
         self.tasks = []
 
     def new_task(self):
+        # may not need both of these
         task = Task()
         self._add_task(task)
         return self.tasks[-1]
 
     def _add_task(self, task):
+        # could set task = Task() by default
         task.id = self.count + 1
         self.count += 1
         self.tasks.append(task)
@@ -136,7 +137,13 @@ class TaskCollection(object):
                 self.tasks[self.tasks.index(tsk)] = task
                 break
 
-# -----------------
+    # TODO add sorting function for tasks. Bind to a gui sorting dropdown
+    # TODO create an archive list of tasks instead of an archive collection
+
+    # TODO hide until next occurrence function. Add to 'waiting' list
+    # TODO show if current time is past next occurence time stamp. Remove from waiting list. Schedule calls in taskscreen
+
+# -----------------TESTING
 # from pathlib import Path
 # t = Task('First Task')
 # Task.add_group('First Group')
