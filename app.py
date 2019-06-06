@@ -32,10 +32,10 @@ class todoneApp(App):
         self.screenmanager.current = 'screen-task'
 
     def store_data(self, store_file_path, task_collection):
-        # print('storing data')
         YAML().dump(task_collection, store_file_path)
 
     def load_data(self, store_file_path):
+        # TODO tasks are only saved if they were created in that session.
         if store_file_path.is_file():
             task_c = YAML().load(store_file_path)
             self.taskscreen.refill_task_collection(task_c)
@@ -45,19 +45,20 @@ class todoneApp(App):
 
     def on_stop(self):
         # print('Stopped')
+        # TODO clear archive
         # delete current store/overwrite data
         self.store_data(self.store_file_path, self.taskscreen.task_collection)
 
-    def toggle_widget(self, *args):
-        # print('Args: ',args)
-        for wid in args:
-            # print('Id: ',wid)
-            if hasattr(wid, 'saved_attrs'):
-                wid.height, wid.size_hint_y, wid.opacity = wid.saved_attrs
-                del wid.saved_attrs
-            else:
-                wid.saved_attrs = wid.height, wid.size_hint_y, wid.opacity
-                wid.height, wid.size_hint_y, wid.opacity = 0, None, 0
+    # def toggle_widget(self, *args):
+    #     # print('Args: ',args)
+    #     for wid in args:
+    #         # print('Id: ',wid)
+    #         if hasattr(wid, 'saved_attrs'):
+    #             wid.height, wid.size_hint_y, wid.opacity = wid.saved_attrs
+    #             del wid.saved_attrs
+    #         else:
+    #             wid.saved_attrs = wid.height, wid.size_hint_y, wid.opacity
+    #             wid.height, wid.size_hint_y, wid.opacity = 0, None, 0
 
 
 if __name__ == '__main__':

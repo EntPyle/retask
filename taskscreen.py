@@ -16,29 +16,28 @@ class TaskScreen(Screen):
         print('creating task screen')
         self.archive = TaskCollection()
 
-    # self.register_event_type('on_quit_app')
-
     def refill_task_collection(self, task_collection):
-        # use something like this to switch between archive and normal
-        print('refilling task collection')
-        for task in task_collection.tasks:
-            print('adding task')
-            print(task, task.text, task.group, task.frequency)
+        # makes stored task_c the task_c used in TaskScreen
+        self.task_collection = task_collection
+        for task in self.task_collection.tasks:
             taskwidget = self.add_taskwidget(task, task_out=True)
 
-    def remove_task(self, instance):
-        self.archive.new_task()
+    def archive_task(self, instance):
+        # self.add_taskwidget(instance)
+        self.archive._add_task(instance.task)
         self.task_collection.remove_task(instance.task)
         self.ids['task_container'].ids['container'].remove_widget(instance)
 
-    def new_task(self):
-        '''Wrapper for task collection fx new_task'''
-        self.add_taskwidget(self.task_collection.new_task())
+    # TODO Delete if not needed
+    # def new_task(self):
+    #     '''Wrapper for task collection fx new_task'''
+    #     self.add_taskwidget(self.task_collection.new_task())
 
     def add_taskwidget(self, task, task_out=False):
+        print(task.text)
         taskwidget = TaskWidget()  # create task widget
         taskwidget.task = task  # bind passed task object to widget
-        taskwidget.bind(on_delete=self.remove_task)
+        taskwidget.bind(on_delete=self.archive_task)
         taskwidget.bind(on_task_changed=self.modify_task)
         self.ids['task_container'].ids['container'].add_widget(taskwidget)
         if task_out:
@@ -89,8 +88,8 @@ class TaskWidget(BoxLayout):
 
     def on_task(self, instance, value):
         '''Used to link widget parameters to the task object'''
-        print('on task fired')
-        print(self, instance, value)
+        # print('on task fired')
+        # print(self, instance, value)
         self.ids['task_input'].text = self.task.text
         self.ids['lbl_freq'].text = self.task.frequency
         self.ids['lbl_group'].text = self.task.group
@@ -106,8 +105,8 @@ class TaskWidget(BoxLayout):
             self.edit = False
 
     def on_edit(self, instance, value):
-        print('on_edit fired')
-        print('Edit: ', value)
+        # print('on_edit fired')
+        # print('Edit: ', value)
         if value:
             # edit mode
             self.ids['task_input'].disabled = False
