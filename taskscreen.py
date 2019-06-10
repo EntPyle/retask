@@ -1,19 +1,22 @@
-from kivy.properties import ObjectProperty, BooleanProperty
+from kivy.app import App
+from kivy.properties import ObjectProperty, BooleanProperty, ListProperty
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.popup import Popup
 from kivy.uix.screenmanager import Screen
 
-from taskfunctions import TaskCollection, Task
+from taskfunctions import TaskCollection
 
 
 class TaskScreen(Screen):
 
     # TODO check for hidden repeating tasks on load, add refresh button?
+    # TODO add in keybinding ctrl+Z to call task_collection.recover_task() when no tasks are in edit mode
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.task_collection = TaskCollection()
         self.scheduled_tasks = TaskCollection()
+        # TODO update groups between task_collection and scheduled tasks
         # print('creating task screen')
         self.archive = TaskCollection()
 
@@ -29,17 +32,17 @@ class TaskScreen(Screen):
         self.task_collection.remove_task(instance.task)
         self.ids['task_container'].ids['container'].remove_widget(instance)
 
-    # TODO Delete if not needed
-    # def new_task(self):
-    #     '''Wrapper for task collection fx new_task'''
-    #     self.add_taskwidget(self.task_collection.new_task())
+    def new_task(self):
+        '''Wrapper for task collection fx new_task'''
+        self.add_taskwidget(self.task_collection.new_task())
 
     def add_taskwidget(self, task, task_out=False):
         print(task.text)
         taskwidget = TaskWidget()  # create task widget
         taskwidget.task = task  # bind passed task object to widget
-        taskwidget.bind(on_delete=self.archive_task)
+        taskwidget.bind(on_delete=self.task_collection.archive_task)
         taskwidget.bind(on_task_changed=self.modify_task)
+        taskwidget.bind(on_add_group=self.add_group)
         self.ids['task_container'].ids['container'].add_widget(taskwidget)
         if task_out:
             return taskwidget
@@ -47,6 +50,11 @@ class TaskScreen(Screen):
     def modify_task(self, instance):
         '''Wrapper for task collection fx modify_task'''
         self.task_collection.modify_task(instance.task)
+
+    def add_group(self, group_name):
+        # add group to list
+        # iterate through tasks and update group dropdown values
+        pass
 
 class TopBar(BoxLayout):
     # contains app header
@@ -65,6 +73,7 @@ class TaskWidget(BoxLayout):
     '''
     edit = BooleanProperty(None)
     task = ObjectProperty(None)
+    group_list = ListProperty(['None'])
 
     # stored_data = ObjectProperty(None)
 
@@ -74,6 +83,8 @@ class TaskWidget(BoxLayout):
         # self.register_event_type('on_task_changed')
         self.register_event_type('on_complete')
         self.register_event_type('on_edit_group')
+        self.register_event_type('on_add_group')
+        self.group_list = App.get_running_app().screenmanager.get_screen('screen-task').task_collection.group_list
         self.edit_wid_list = [
             self.ids['task_btm'],
             self.ids['freq_spin'],
@@ -111,6 +122,8 @@ class TaskWidget(BoxLayout):
         if value:
             # edit mode
             self.ids['task_input'].disabled = False
+            self.group_list = App.get_running_app().screenmanager.get_screen('screen-task').task_collection.group_list
+            self.ids['group_spin'].values = self.group_list
         else:
             # display mode
             self.task.text = self.ids['task_input'].text
@@ -159,11 +172,18 @@ class TaskWidget(BoxLayout):
         # Task.add_group(value)
         return self
 
+    def on_add_group(self):
+        pass
+
     def refresh_groups(self, popup):
         group_name = popup.ids['grp_input'].text
-        Task.add_group(group_name)
+        task_c = App.get_running_app().screenmanager.get_screen('screen-task').task_collection
+        # TODO move this to on_add_group, optional
+        task_c.add_group(group_name)
+        self.group_list = task_c.group_list
+        # Task.add_group(group_name)
         # self.stored_data.put('groups', names = Task.group_list)
-        self.ids['group_spin'].values = Task.group_list
+        self.ids['group_spin'].values = self.group_list
 
     def toggle_widget(self, *args):
         '''Toggles view state of the passed widgets'''
@@ -184,6 +204,9 @@ class AddGroupPopup(Popup):
         self.register_event_type('on_add_group')
 
     def on_open(self):
+        # Todo focus text box
+        # TODO fix default sizing so create button is not dominating
+        # TODO add error handling if group already exists
         pass
 
     def on_add_group(self):

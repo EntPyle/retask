@@ -5,14 +5,13 @@ from ruamel.yaml import YAML, yaml_object
 
 @yaml_object(YAML())
 class Task(object):
-    group_list = ['None']
     status_list = ['normal', 'edit', 'archived']
     frequency_list = ['Once', 'Weekly', 'Monthly', 'Quarterly', 'Annually']
 
     def __init__(self, text='', id_num=1, group='', frequency='Once'):
         self.id = id_num
         self._text = text
-        self._init_time = self._edit_time = self.self._get_time_now()
+        self._init_time = self._edit_time = self._get_time_now()
         self._group = group
         self._frequency = frequency
         self._status = 'edit'
@@ -33,26 +32,26 @@ class Task(object):
 
     # TODO create function to set next occurency time based on frequency and time of completion
 
-    @classmethod
-    def add_group(cls, group_name):
-        group_name = str(group_name)
-        if group_name not in cls.group_list:
-            cls.group_list.append(group_name)
-        else:
-            raise ValueError('Group {group_name} already exists')
-        return cls
-
-    @classmethod
-    def rename_group(cls, old_group_name, new_group_name):
-        idx = cls.group_list.index(str(old_group_name))
-        cls.group_list[idx] = str(new_group_name)
-        return cls
-
-    @classmethod
-    def delete_group(cls, group_name):
-        # add check for group existence and if any tasks are in group
-        cls.group_list.remove(str(group_name))
-        return cls
+    # @classmethod
+    # def add_group(cls, group_name):
+    #     group_name = str(group_name)
+    #     if group_name not in cls.group_list:
+    #         cls.group_list.append(group_name)
+    #     else:
+    #         raise ValueError('Group {group_name} already exists')
+    #     return cls
+    #
+    # @classmethod
+    # def rename_group(cls, old_group_name, new_group_name):
+    #     idx = cls.group_list.index(str(old_group_name))
+    #     cls.group_list[idx] = str(new_group_name)
+    #     return cls
+    #
+    # @classmethod
+    # def delete_group(cls, group_name):
+    #     # add check for group existence and if any tasks are in group
+    #     cls.group_list.remove(str(group_name))
+    #     return cls
 
     @property
     def text(self):
@@ -95,25 +94,14 @@ class Task(object):
             self._status = status
             self._edit_time = self._get_time_now()
 
-    # TODO delete if not needed
-    # @property
-    # def complete(self):
-    #     return self._complete
-    #
-    # @complete.setter
-    # def complete(self, value):
-    #     if type(value) is bool:
-    #         self._complete = value
-    #     else:
-    #         raise TypeError(f'Complete values must be boolean, not {value}, type {type(value)}')
-
-
 @yaml_object(YAML())
 class TaskCollection(object):
 
     def __init__(self):
         self.count = 0
         self.tasks = []
+        self.group_list = ['None']
+        self.archived_tasks = []
 
     def new_task(self):
         # may not need both of these
@@ -127,19 +115,52 @@ class TaskCollection(object):
         self.count += 1
         self.tasks.append(task)
 
-    def remove_task(self, task):
-        self.tasks.remove(task)
-        self.count -= 1
-
     def modify_task(self, task):
         for tsk in self.tasks:
             if tsk.id == task.id:
                 self.tasks[self.tasks.index(tsk)] = task
                 break
 
-    # TODO add sorting function for tasks. Bind to a gui sorting dropdown
-    # TODO create an archive list of tasks instead of an archive collection
+    def archive_task(self, task):
+        '''
+        Stores a deleted task in a list
+        :param task: the task to be deleted form the collection
+        :return: None
+        '''
+        self.archived_tasks.append(task)
+        self.tasks.remove(task)
+        self.count -= 1
 
+    def recover_task(self, out_task=False):
+        '''
+        Used to undo the deletion of a task
+        :param out_task: set to True to return the task
+        :return: [task]
+        '''
+        recovered_task = self.archived_tasks.pop()
+        self._add_task(recovered_task)
+        if out_task:
+            return recovered_task
+
+    def add_group(self, group_name):
+        group_name = str(group_name)
+        if group_name not in self.group_list:
+            self.group_list.append(group_name)
+        else:
+            raise ValueError('Group {group_name} already exists')
+        return self
+
+    def rename_group(self, old_group_name, new_group_name):
+        idx = self.group_list.index(str(old_group_name))
+        self.group_list[idx] = str(new_group_name)
+        return self
+
+    def delete_group(self, group_name):
+        # add check for group existence and if any tasks are in group
+        self.group_list.remove(str(group_name))
+        return self
+
+    # TODO add sorting function for tasks. Bind to a gui sorting dropdown
     # TODO hide until next occurrence function. Add to 'waiting' list
     # TODO show if current time is past next occurence time stamp. Remove from waiting list. Schedule calls in taskscreen
 

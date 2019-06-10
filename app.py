@@ -31,7 +31,9 @@ class todoneApp(App):
         self.load_data(self.store_file_path)
         self.screenmanager.current = 'screen-task'
 
-    def store_data(self, store_file_path, task_collection):
+    def store_data(self, store_file_path, task_collection, clear_archive=True):
+        if clear_archive:
+            task_collection.archived_tasks.clear()
         YAML().dump(task_collection, store_file_path)
 
     def load_data(self, store_file_path):
@@ -44,20 +46,8 @@ class todoneApp(App):
 
     def on_stop(self):
         # print('Stopped')
-        # TODO clear archive
         # delete current store/overwrite data
         self.store_data(self.store_file_path, self.taskscreen.task_collection)
-
-    # def toggle_widget(self, *args):
-    #     # print('Args: ',args)
-    #     for wid in args:
-    #         # print('Id: ',wid)
-    #         if hasattr(wid, 'saved_attrs'):
-    #             wid.height, wid.size_hint_y, wid.opacity = wid.saved_attrs
-    #             del wid.saved_attrs
-    #         else:
-    #             wid.saved_attrs = wid.height, wid.size_hint_y, wid.opacity
-    #             wid.height, wid.size_hint_y, wid.opacity = 0, None, 0
 
 
 if __name__ == '__main__':

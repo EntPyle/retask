@@ -133,7 +133,7 @@
 		TodoSpinner:
 			id: group_spin
 			text: 'None'
-			values: Task.group_list
+			values: root.group_list
 			size_hint_x: 0.75
 			size_hint_y: 0.9
 		TodoButton:
@@ -171,7 +171,7 @@
 		spacing:'16dp'
 
 <AddGroupPopup@Popup>:
-	size_hint: 0.2, 0.2
+	size_hint: 0.4, 0.6
 	title: ''
 	separator_height: 0
 	BoxLayout:
@@ -224,10 +224,11 @@
 				size_hint_y: None
 				height:'64dp'
 				padding:'16dp','16dp','16dp','0dp'
-				on_add_taskwidget: root.new_task()
+				on_add_taskwidget: root.new_task() # TODO bind in .py for consistency
 				# on_quit_pressed: root.pre_quit_exec()
 			Space:
 				size_hint_y:None
 				height:'16dp'
 			TaskWidgetContainer:
 				id: task_container
+#				on_add_group:
