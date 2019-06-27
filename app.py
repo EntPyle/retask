@@ -1,8 +1,10 @@
 from kivy.config import Config
 
+Config.set('input', 'mouse', 'mouse,multitouch_on_demand')
 Config.set('graphics', 'window_state', 'maximized')
 Config.set('kivy', 'exit_on_escape', '0')
 from kivy.app import App
+from kivy.core.window import Window
 from kivy.uix.screenmanager import ScreenManager, SwapTransition
 from taskscreen import TaskScreen
 from ruamel.yaml import YAML
@@ -18,9 +20,19 @@ class todoneApp(App):
 
     def build(self):
         self.icon = 'data/icon/todone_icon.png'  # Don't know why icon isn't set :(
-        self.title = 'ToDone'
+        self.titlegfd = 'Retask'
+        Window.bind(on_keyboard=self.on_keyboard)
         self.init()
         return self.screenmanager
+
+    def on_keyboard(self, window, key, scancode, codepoint, modifier):
+        # print(key, codepoint, modifier)
+        if 'ctrl' in modifier and codepoint == 'q':
+            self.stop()
+        if 'ctrl' in modifier and codepoint == 'n':
+            self.taskscreen.new_task()
+        if 'ctrl' in modifier and codepoint == 'z':
+            self.taskscreen.recover_task()
 
     def init(self):
         self.store_file_path = Path('task_store.yml')

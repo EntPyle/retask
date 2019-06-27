@@ -1,57 +1,103 @@
+import calendar as cal
+import datetime as dt
 import time
 
 from ruamel.yaml import YAML, yaml_object
 
 
+def _get_next_day_of(target_type: str = 'weekday', next_day_name: str = 'Monday'):
+    tt = target_type.lower()
+    tt_opts = ['day', 'weekday', 'week', 'month', 'quarter', 'year']
+    if tt not in tt_opts:
+        raise ValueError(f'target_type must be one of {tt_opts}, instead of {tt}')
+    today = dt.date.today()
+    next_day = tuple(cal.day_name).index(next_day_name)
+    while True:
+        # looping to allow quarter and annual to use month functionality
+        if tt == 'day':
+            # return tomorrow
+            return today.replace(day=today.day + 1)
+        elif tt == 'weekday':
+            # return next weekday
+            if today.weekday() <= 4:
+                return today.replace(day=today.day + 1)
+            else:
+                return today.replace(day=today.day + 3)
+        elif tt == 'week':
+            # return date of next_day_name in next week
+            return today + dt.timedelta(days=7 - today.weekday() + next_day)
+        elif tt == 'month':
+            # return date of first weekday in next month
+            for day in cal.Calendar().itermonthdays2(today.year, today.month + 1):
+                if day[0] == 0:  # day in previous month
+                    continue
+                elif day[1] == next_day:  # day is target weekday
+                    break
+                else:
+                    continue
+            return today.replace(month=today.month + 1, day=day[0])
+        elif tt == 'quarter':
+            # change month of 'today' to last month of current quarter
+            today = today.replace(month=(today.month + 2) // 3 * 3, day=1)
+            # day changed to avoid days in month error
+            tt = 'month'
+        elif tt == 'year':
+            # return date of first weekday in current month number of next year
+            today = today.replace(year=today.year + 1, month=today.month - 1, day=1)
+            tt = 'month'
+
 @yaml_object(YAML())
 class Task(object):
     status_list = ['normal', 'edit', 'archived']
-    frequency_list = ['Once', 'Weekly', 'Monthly', 'Quarterly', 'Annually']
+    frequency_list = ['Once', 'Daily', 'Weekly', 'Monthly', 'Quarterly', 'Annually']
 
     def __init__(self, text='', id_num=1, group='', frequency='Once'):
         self.id = id_num
         self._text = text
-        self._init_time = self._edit_time = self._get_time_now()
+        self._init_time = self._edit_time = self._refresh_time = dt.date.today()
         self._group = group
         self._frequency = frequency
+        self.set_due_date(self)
         self._status = 'edit'
-        # self._complete = False # TODO delete if not needed
+        self._day_name = 'Monday'
 
     @staticmethod
-    def _get_time_now():
-        month = {1: 'Jan', 2: 'Feb', 3: 'Mar', 4: 'Apr', 5: 'May', 6: 'Jun', 7: 'Jul', 8: 'Aug', 9: 'Sep', 10: 'Oct',
-                 11: 'Nov', 12: 'Dec'}
-        now = time.localtime(time.time())
-        year = str(now[0])
-        month = month[now[1]]
-        day = str(now[2]).zfill(2)
-        hour = str(now[3]).zfill(2)
-        minute = str(now[4]).zfill(2)
-        stamp = hour + ':' + minute + ' ' + month + ' ' + day + ' ' + year
-        return stamp
+    def set_due_date(self):
+        # freq to next occurrence trigger dict
+        if self._frequency == self.frequency_list[0]:  # Once
+            self._due_date = None
+        elif self._frequency == self.frequency_list[1]:  # Daily
+            self._due_date = _get_next_day_of(target_type='weekday')
+        elif self._frequency == self.frequency_list[2]:  # Weekly
+            self._due_date = _get_next_day_of(target_type='week')
+        elif self._frequency == self.frequency_list[3]:  # Monthly
+            self._due_date = _get_next_day_of(target_type='month')
+        elif self._frequency == self.frequency_list[4]:  # Quarterly
+            self._due_date = _get_next_day_of(target_type='quarter')
+        elif self._frequency == self.frequency_list[5]:  # Annually
+            # first day month task was created in.
+            self._due_date = _get_next_day_of(target_type='year')
 
-    # TODO create function to set next occurency time based on frequency and time of completion
+    def is_task_due(self):
+        if self._due_date is not None:
+            return self._due_date <= dt.date.today()
+        else:
+            return False
 
-    # @classmethod
-    # def add_group(cls, group_name):
-    #     group_name = str(group_name)
-    #     if group_name not in cls.group_list:
-    #         cls.group_list.append(group_name)
-    #     else:
-    #         raise ValueError('Group {group_name} already exists')
-    #     return cls
-    #
-    # @classmethod
-    # def rename_group(cls, old_group_name, new_group_name):
-    #     idx = cls.group_list.index(str(old_group_name))
-    #     cls.group_list[idx] = str(new_group_name)
-    #     return cls
-    #
-    # @classmethod
-    # def delete_group(cls, group_name):
-    #     # add check for group existence and if any tasks are in group
-    #     cls.group_list.remove(str(group_name))
-    #     return cls
+    '''
+    # on task creation:
+    # set start to task creation moment (aka current time). DONE
+    # set due to next start time. DONE
+
+    # on task complete:
+    # set refresh_time to next refresh_time. If _due_time is None, archive task.
+
+    # on app start:
+    # refresh tasks based on current time
+    # if next task start is before current moment and task is complete, move to current display
+    # if overdue indicate
+    
+    '''
 
     @property
     def text(self):
@@ -61,7 +107,7 @@ class Task(object):
     def text(self, text):
         if self._text != text:
             self._text = text
-            self._edit_time = self._get_time_now()
+            self._edit_time = dt.date.today()
 
     @property
     def group(self):
@@ -71,7 +117,7 @@ class Task(object):
     def group(self, group):
         if self._group != group:
             self._group = group
-            self._edit_time = self._get_time_now()
+            self._edit_time = dt.date.today()
 
     @property
     def frequency(self):
@@ -81,7 +127,7 @@ class Task(object):
     def frequency(self, freq):
         if freq in self.frequency_list:
             self._frequency = freq
-            self._edit_time = self._get_time_now()
+            self._edit_time = dt.date.today()
 
     @property
     def status(self):
@@ -92,7 +138,7 @@ class Task(object):
     def status(self, status):
         if status in self.status_list:
             self._status = status
-            self._edit_time = self._get_time_now()
+            self._edit_time = dt.date.today()
 
 @yaml_object(YAML())
 class TaskCollection(object):
@@ -102,6 +148,7 @@ class TaskCollection(object):
         self.tasks = []
         self.group_list = ['None']
         self.archived_tasks = []
+        self.scheduled_tasks = []
 
     def new_task(self):
         # may not need both of these
@@ -110,7 +157,6 @@ class TaskCollection(object):
         return self.tasks[-1]
 
     def _add_task(self, task):
-        # could set task = Task() by default
         task.id = self.count + 1
         self.count += 1
         self.tasks.append(task)
@@ -120,6 +166,23 @@ class TaskCollection(object):
             if tsk.id == task.id:
                 self.tasks[self.tasks.index(tsk)] = task
                 break
+
+    def schedule_task(self, task):
+        if task._due_date is not None:
+            self.scheduled_tasks.append(task)
+            self.tasks.remove(task)
+            self.count -= 1
+        else:
+            self.archive_task(task)
+
+    def check_scheduled_tasks(self):
+        for task in self.scheduled_tasks:
+            print(task.text, task.is_task_due())
+            if task.is_task_due():
+                print(task.text + ' is due')
+                self.tasks.append(task)
+                self.count += 1
+                self.scheduled_tasks.remove(task)
 
     def archive_task(self, task):
         '''
@@ -144,35 +207,28 @@ class TaskCollection(object):
 
     def add_group(self, group_name):
         group_name = str(group_name)
-        if group_name not in self.group_list:
+        if group_name not in self.group_list and group_name is not '':
             self.group_list.append(group_name)
         else:
-            raise ValueError('Group {group_name} already exists')
+            print(self.group_list)
+            raise ValueError(f'Group {group_name} already exists')
         return self
 
     def rename_group(self, old_group_name, new_group_name):
         idx = self.group_list.index(str(old_group_name))
         self.group_list[idx] = str(new_group_name)
+        self._update_groups(old_group_name, new_group_name)
         return self
 
     def delete_group(self, group_name):
         # add check for group existence and if any tasks are in group
         self.group_list.remove(str(group_name))
+        self._update_groups(group_name)
         return self
 
-    # TODO add sorting function for tasks. Bind to a gui sorting dropdown
-    # TODO hide until next occurrence function. Add to 'waiting' list
-    # TODO show if current time is past next occurence time stamp. Remove from waiting list. Schedule calls in taskscreen
+    def _update_groups(self, group_name, new_group_name='None'):
+        for task in self.tasks:
+            if task.group == group_name:
+                task.group = new_group_name
 
-# -----------------TESTING
-# from pathlib import Path
-# t = Task('First Task')
-# Task.add_group('First Group')
-# print(Task.group_list)
-# tc = TaskCollection()
-# tc._add_task(t)
-# print(tc)
-# yaml = YAML()
-# yaml.dump(tc, Path('test_dump.yml'))
-# to = yaml.load(Path('test_dump.yml'))
-# print(to.tasks[-1].text)
+    # TODO add sorting function for tasks. Bind to a gui sorting dropdown

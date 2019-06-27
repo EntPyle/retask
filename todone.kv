@@ -1,5 +1,6 @@
 #:import AsyncImage kivy.uix.image.AsyncImage
 #:import Task taskfunctions.Task
+#:import Factory kivy.factory.Factory
 
 <Space@Label>:
 
@@ -23,21 +24,36 @@
 	selection_color: 0.925, 0.941, 0.937, 0.5
 	padding: '8dp', '8dp'
 	border: 10, 10, 10, 10
+	height: self.minimum_height
+	write_tab: False
 
 <TodoButton@Button>:
 	font_name: 'data/fonts/Lato-Bold.ttf'
 	font_size: '22sp'
 	padding: '8dp','8dp'
 	border: 10,10,10,10
+	background_normal:'data/images/src/but_turq.png'
+	background_down: 'data/images/src/but_turq_down.png'
 	background_disabled_normal:'data/images/src/but_disabled.png'
 	background_disabled_down:'data/images/src/but_disabled.png'
 
 <CompleteButton@TodoButton>
 
+<TodoSpinnerOption@SpinnerOption>:
+	font_name: 'data/fonts/Lato-Bold.ttf'
+	padding: '8dp','8dp'
+	background_normal:'data/images/src/but_blue.png'
+	background_disabled_normal:'data/images/src/but_disabled.png'
+	background_disabled_down:'data/images/src/but_disabled.png'
+
 <TodoSpinner@Spinner>:
+	font_name: 'data/fonts/Lato-Bold.ttf'
+	font_size: '22sp'
 	padding: '8dp','8dp'
 	center: 0.5, 0.5
-	background_normal:'data/images/src/but_blue.png'
+	background_normal:'data/images/src/but_turq.png'
+	option_cls: Factory.get("TodoSpinnerOption")
+	sync_height: True
 
 <TodoLabel@Label>:
 	size_hint_x: None
@@ -70,17 +86,21 @@
 <TaskWidget>:
 	id: task_w
 	orientation: 'vertical'
-	but_add_g:but_add_g
 	but_del:but_del
+	task_input:task_input
+	pos_hint: 'center_x'
+	size_hint_x: 0.98
 	size_hint_y: None
-	# height: '110dp'
+	height: '110dp' if self.edit else '60dp'
+	padding: 4
+	spacing: '8dp'
 	canvas:
 		Color:
 			rgba: 0.925, 0.941, 0.937, 1.0
 		RoundedRectangle:
 			pos: self.pos
 			size: self.size
-			radius: 10,10,10,10	
+			radius: 10,10,10,10
 	BoxLayout:
 		id: task_top
 		orientation: 'horizontal'
@@ -92,34 +112,41 @@
 			size_hint_x: 1
 			size_hint_min_x: 100
 			text_size: (self.width, None)
-			size_hint_y: 0.9 
-			focus: True
+			size_hint_y: 0.9
+			pos_hint: {'left': 1}
 		TodoLabel:
 			id: lbl_freq
 			text: root.ids['freq_spin'].text
 			size_hint_x: 0.25
-			size_hint_min_x: 60
+			size_hint_min_x: self.texture_size[0]*1.1
 			size_hint_max_x: 200
 			size_hint_y: 1
 			height: self.texture_size[1]
+			pos_hint: {'right': 0.4}
 		TodoLabel:
 			id: lbl_group
 			text: root.ids['group_spin'].text
 			size_hint_x: 0.25
-			size_hint_min_x: 60
+			size_hint_min_x: self.texture_size[0]*1.1
 			size_hint_max_x: 200
 			size_hint_y: 1
 			height: self.texture_size[1]
+			pos_hint: {'right': 0.7}
 		TodoButton:
 			id: btn_complete
-			text: 'Mark as Complete'
+			text: 'Complete'
+#			canvas:
+#                RoundedRectangle:
+#                    radius: 10,10,10,10
 			size_hint_x: 0.25
-			size_hint_min_x: 112
-			size_hint_max_x: 200
+			size_hint_min_x: 115
+			size_hint_max_x: 140
 		    text_size: self.width, None
-			background_normal: ''
-			background_color: (0.24, 0.84, 0.548, 1)
-			on_release:root.dispatch('on_complete')			
+		    width: self.texture_size[0]*1.2
+#			background_normal: ''
+#			background_color: (0.24, 0.84, 0.548, 1)
+			on_release:root.dispatch('on_complete')
+			pos_hint: {'right': 1}
 	BoxLayout:
 		id: task_btm
 		orientation: 'horizontal'
@@ -127,6 +154,7 @@
 		TodoSpinner:
 			id: freq_spin
 			text: 'Once'
+			on_text: root.frequency_changed()
 			values: Task.frequency_list
 			size_hint_x: 0.75
 			size_hint_y: 0.9
@@ -136,16 +164,7 @@
 			values: root.group_list
 			size_hint_x: 0.75
 			size_hint_y: 0.9
-		TodoButton:
-			id: but_add_g
-			size_hint_x: None
-			size_hint_y: 0.9
-			text: 'Add Group'
-			width: self.texture_size[0]*1.2
-			border:8,8,8,8
-			background_normal:'data/images/src/but_turq.png'
-			background_down:'data/images/src/but_turq_down.png'
-			on_release:root.dispatch('on_edit_group')			
+			sync_height: True
 		Space:
 			id: edit_spc
 			size_hint_x: 1
@@ -161,38 +180,63 @@
 			on_release:root.dispatch('on_delete')
 
 <TaskWidgetContainer@ScrollView>:
-	StackLayout:
+	GridLayout:
 		id:container
 		size_hint_y:None
 		size_hint_x:1
 		height:self.minimum_height
-		orientation:'lr-tb'
+#		orientation:'lr-tb'
+        cols: 1
 		padding:'16dp','0dp','16dp','16dp'
 		spacing:'16dp'
-
-<AddGroupPopup@Popup>:
-	size_hint: 0.4, 0.6
-	title: ''
+<ManageGroupPopup@Popup>:
+	size_hint: 0.8, 0.8
+	title: 'Group Manager'
 	separator_height: 0
 	BoxLayout:
 		orientation: 'vertical'
 		spacing: '12dp'
 		TodoInput:
-			id: grp_input
-			hint_text: 'Type Group Name'
+			id: new_grp_input
+			hint_text: 'Type Group Name and Press Enter'
 			multiline: False
 			size_hint_y: None
-			height: self.minimum_height
 			padding: '8dp'
-		TodoButton:
-			id: but_add_g
-			size_hint_x: 1
-			size_hint_y: 0.9
-			text: f'Create {grp_input.text} Group'
-			border:8,8,8,8
-			background_normal:'data/images/src/but_turq.png'
-			background_down:'data/images/src/but_turq_down.png'
-			on_release: root.dispatch('on_add_group'); root.dismiss()
+			on_text_validate: root.dispatch('on_new_group')
+		ScrollView:
+		    GridLayout:
+                id: container
+                cols: 1
+
+<GroupWidget@BoxLayout>:
+    id: group_w
+    orientation: 'horizontal'
+    but_del:but_del
+    size_hint_y: None
+    height: '44dp'
+    canvas:
+        Color:
+            rgba: 0.925, 0.941, 0.937, 1.0
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: 4,4,4,4
+    TodoInput:
+        id: grp_input
+        size_hint: 0.9, None
+        center_y: .5
+        text: root.group
+        multiline: False
+        on_focus: root.dispatch('on_change_focus')
+    TodoButton:
+        id: but_del
+        size_hint: None, None
+        pos_hint: {'right': 1}
+        size: '36dp', '36dp'
+        border:8,8,8,8
+        background_normal:'data/images/src/but_del.png'
+        background_down:'data/images/src/but_del_down.png'
+        on_release:root.dispatch('on_delete_group')
 
 <TopBar@BoxLayout>:
 	orientation:'horizontal'
@@ -205,16 +249,17 @@
 		background_down:'data/images/src/but_new_down.png'
 		on_release: root.dispatch('on_add_taskwidget')
 	Space:
-	# SearchBox:
-	#     width:'240dp'
-	#     size_hint_x:None
-	# TodoButton:
-	# 	size_hint:None, None
-	# 	size:'96dp', '48dp'
-	# 	text:'Quit'
-	# 	background_normal:'data/images/src/but_red.png'
-	# 	background_down:'data/images/src/but_red_down.png'
-	# 	on_release:root.dispatch('on_quit_pressed')
+#    SearchBox:
+#        width:'240dp'
+#        size_hint_x:None
+    TodoButton:
+        size_hint:None, None
+        height: '48dp'
+        text:'Manage Groups'
+        width: self.texture_size[0]*1.2
+        background_normal:'data/images/src/but_blue.png'
+        background_down:'data/images/src/but_blue_down.png'
+        on_release:root.dispatch('on_manage_groups')
 
 <TaskScreen>:
 	BG:
@@ -224,11 +269,10 @@
 				size_hint_y: None
 				height:'64dp'
 				padding:'16dp','16dp','16dp','0dp'
-				on_add_taskwidget: root.new_task() # TODO bind in .py for consistency
-				# on_quit_pressed: root.pre_quit_exec()
+				on_add_taskwidget: root.new_task()
+				on_manage_groups: root.manage_groups_popup()
 			Space:
 				size_hint_y:None
 				height:'16dp'
 			TaskWidgetContainer:
 				id: task_container
-#				on_add_group:
