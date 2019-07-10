@@ -1,6 +1,5 @@
 import calendar as cal
 import datetime as dt
-import time
 
 from ruamel.yaml import YAML, yaml_object
 
@@ -16,13 +15,13 @@ def _get_next_day_of(target_type: str = 'weekday', next_day_name: str = 'Monday'
         # looping to allow quarter and annual to use month functionality
         if tt == 'day':
             # return tomorrow
-            return today.replace(day=today.day + 1)
+            return today + dt.timedelta(days=1)
         elif tt == 'weekday':
             # return next weekday
             if today.weekday() <= 4:
-                return today.replace(day=today.day + 1)
+                return today + dt.timedelta(days=1)
             else:
-                return today.replace(day=today.day + 3)
+                return today + dt.timedelta(days=3)
         elif tt == 'week':
             # return date of next_day_name in next week
             return today + dt.timedelta(days=7 - today.weekday() + next_day)
@@ -48,17 +47,16 @@ def _get_next_day_of(target_type: str = 'weekday', next_day_name: str = 'Monday'
 
 @yaml_object(YAML())
 class Task(object):
-    status_list = ['normal', 'edit', 'archived']
-    frequency_list = ['Once', 'Daily', 'Weekly', 'Monthly', 'Quarterly', 'Annually']
+    frequency_list = ['One-Time', 'Daily', 'Weekly', 'Monthly', 'Quarterly', 'Annual']
 
-    def __init__(self, text='', id_num=1, group='', frequency='Once'):
+    def __init__(self, text='', id_num=1, group='None', frequency='One-Time'):
+
         self.id = id_num
         self._text = text
         self._init_time = self._edit_time = self._refresh_time = dt.date.today()
         self._group = group
         self._frequency = frequency
         self.set_due_date(self)
-        self._status = 'edit'
         self._day_name = 'Monday'
 
     @staticmethod
@@ -129,17 +127,6 @@ class Task(object):
             self._frequency = freq
             self._edit_time = dt.date.today()
 
-    @property
-    def status(self):
-        return self._status
-
-    @status.setter
-    # may not be needed
-    def status(self, status):
-        if status in self.status_list:
-            self._status = status
-            self._edit_time = dt.date.today()
-
 @yaml_object(YAML())
 class TaskCollection(object):
 
@@ -177,11 +164,8 @@ class TaskCollection(object):
 
     def check_scheduled_tasks(self):
         for task in self.scheduled_tasks:
-            print(task.text, task.is_task_due())
             if task.is_task_due():
-                print(task.text + ' is due')
-                self.tasks.append(task)
-                self.count += 1
+                self._add_task(task)
                 self.scheduled_tasks.remove(task)
 
     def archive_task(self, task):
@@ -204,6 +188,40 @@ class TaskCollection(object):
         self._add_task(recovered_task)
         if out_task:
             return recovered_task
+
+    def filter_tasks(self, freq='', group='', text=''):
+        '''
+        return a list of tasks that meet the filter
+
+        :param freq: frequency to filter by in tasks
+        :param group: group to filter by in tasks
+        :param text: str to search for in tasks
+        :return task_list: filtered task list
+        '''
+        filt_tasks = []
+        text.lower()
+        if freq != '':
+            for frequency in Task.frequency_list:
+                if freq.lower() in frequency.lower():
+                    freq_tasks = (task for task in self.tasks if task._frequency == frequency)
+                    [filt_tasks.append(task) for task in freq_tasks if task not in filt_tasks]
+        if group != '':
+            for group_name in self.group_list:
+                if group.lower() in group_name.lower():
+                    grp_tasks = [task for task in self.tasks if task.group == group_name]
+                    [filt_tasks.append(task) for task in grp_tasks if task not in filt_tasks]
+
+        if text != '':
+            text_tasks = [task for task in self.tasks if text in task.text.lower()]
+            [filt_tasks.append(task) for task in text_tasks if task not in filt_tasks]
+        return filt_tasks
+
+    def bin_tasks_by(self, category='group'):
+        if category.lower() == 'group':
+            binned_tasks = {group: self.filter_tasks(group=group) for group in self.group_list}
+        else:  # category.lower() == 'frequency':
+            binned_tasks = {frequency: self.filter_tasks(freq=frequency) for frequency in Task.frequency_list}
+        return {key: binned_tasks[key] for key in binned_tasks if len(binned_tasks[key]) > 0}
 
     def add_group(self, group_name):
         group_name = str(group_name)
@@ -230,5 +248,3 @@ class TaskCollection(object):
         for task in self.tasks:
             if task.group == group_name:
                 task.group = new_group_name
-
-    # TODO add sorting function for tasks. Bind to a gui sorting dropdown

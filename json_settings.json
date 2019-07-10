@@ -1,0 +1,21 @@
+[
+  {
+    "type": "numeric",
+    "title": "Font size",
+    "desc": "Choose the font size",
+    "section": "My Settings",
+    "key": "font_size"
+  },
+  {
+    "type": "options",
+    "title": "Layout",
+    "options": [
+      "List",
+      "Frequency in Columns",
+      "Groups in Columns"
+    ],
+    "desc": "Choose the desired layout style",
+    "section": "My Settings",
+    "key": "layout_setting"
+  }
+]
