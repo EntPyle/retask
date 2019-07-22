@@ -2,7 +2,7 @@
 #### A free to do list program built for recurring tasks. 
 ![Main Screen](https://user-images.githubusercontent.com/35780156/61605428-0df09880-ac0b-11e9-9baa-df7f34a70b67.PNG)
 ## Installation
-The beta release is the folder titled "Retask Distribution" folder. I have only been able to test on two Windows 10 machines. Download the entire folder and launch the app using retask.exe. I recommend putting the dist folder out of sight and creating a shortcut for the executable.
+The current executable release is the folder titled "Retask Distribution" folder. I have only been able to test on two Windows 10 machines. Download the entire folder and launch the app using retask.exe. I recommend putting the dist folder out of sight and creating a shortcut for the executable.
 
 ## Instructions
 
