@@ -1,2 +1,2 @@
-# todone
-A simple to do list program
+# Retask
+A to do list program designed to handle recurring tasks.
