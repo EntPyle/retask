@@ -12,7 +12,6 @@ from kivy.uix.scrollview import ScrollView
 from taskfunctions import TaskCollection
 
 
-# Todo add a way switch to screen/view of completed tasks so they can be marked incomplete
 # Todo (optional) add in ability to show tasks for next days, weeks, or months tasks
 # Add in a day selector that changes the 'today' and refreshes the hidden tasks. Reset with another time
 class TaskScreen(Screen):
