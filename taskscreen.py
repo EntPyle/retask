@@ -157,20 +157,21 @@ class TaskScreen(Screen):
                 task_w.show_freq_lbl = True
                 task_w.show_group_lbl = True
                 self.ids['task_container_section'].children[-1].ids['container'].add_widget(task_w)
-        if self.ids['task_container_section'].width == 100:
-            self.ids['task_container_section']._trigger_layout()
-        if Window.size[0] / len(self.ids['task_container_section'].children) < 80:
-            # App.get_running_app().layout = 'List'
-            self.ids['task_container_section'].rows = 6
-            # self.ids['task_container_section'].cols = 1
-        elif Window.size[0] / len(self.ids['task_container_section'].children) < 150:
-            self.ids['task_container_section'].rows = 3
-        elif Window.size[0] / len(self.ids['task_container_section'].children) < 300:
-            self.ids['task_container_section'].rows = 2
-        else:
-            self.ids['task_container_section'].rows = 1
+        if len(self.ids['task_container_section'].children) != 0:
+            if self.ids['task_container_section'].width == 100:
+                self.ids['task_container_section']._trigger_layout()
+            if Window.size[0] / len(self.ids['task_container_section'].children) < 80:
+                # App.get_running_app().layout = 'List'
+                self.ids['task_container_section'].rows = 6
+                # self.ids['task_container_section'].cols = 1
+            elif Window.size[0] / len(self.ids['task_container_section'].children) < 150:
+                self.ids['task_container_section'].rows = 3
+            elif Window.size[0] / len(self.ids['task_container_section'].children) < 300:
+                self.ids['task_container_section'].rows = 2
+            else:
+                self.ids['task_container_section'].rows = 1
         self.ids['task_container_section']._trigger_layout()
-        print(Window.size[0] / len(self.ids['task_container_section'].children))
+        # print(Window.size[0] / len(self.ids['task_container_section'].children))
 
     def on_touch_down(self, touch):
         for container in self.ids['task_container_section'].children:
