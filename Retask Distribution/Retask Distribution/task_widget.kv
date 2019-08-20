@@ -1,0 +1,76 @@
+<TaskWidget>:
+	id: task_w
+	orientation: 'vertical'
+	but_del:but_del
+	task_input:task_input
+	padding: '2dp'
+	spacing: '8dp'
+	size_hint_min_y: dp(app.font_size)*4
+	canvas:
+		Color:
+			rgba: 0.925, 0.941, 0.937, 1.0
+		RoundedRectangle:
+			pos: self.pos
+			size: self.size
+			radius: 10,10,10,10
+	GridLayout:
+		id: task_top
+		cols: 4
+#		orientation: 'horizontal'
+		pos_hint: {'center_y': 0.5}
+		TodoInput:
+			id: task_input
+			multiline: True
+			text: 'Default text box values'
+			size_hint_min_y: dp(app.font_size)*3
+		TodoLabel:
+			id: lbl_freq
+			text: root.ids['freq_spin'].text
+		TodoLabel:
+			id: lbl_group
+			text: root.ids['group_spin'].text
+		TodoButton:
+			id: btn_complete
+			text: 'Complete'
+	        font_size: app.font_size
+			on_release:root.dispatch('on_complete')
+	GridLayout:
+		id: task_btm
+		cols: 4
+		orientation: 'horizontal'
+		spacing:'8dp'
+		TodoSpinner:
+			id: freq_spin
+			text: 'Once'
+			on_text: root.frequency_changed()
+			values: Task.frequency_list
+			height: self.texture_size[1]
+			size_hint_y: None
+		TodoSpinner:
+			id: group_spin
+			text: 'None'
+			values: root.group_list
+			sync_height: True
+		Space:
+			id: edit_spc
+		TodoButton:
+			id: but_del
+			border:8,8,8,8
+			background_normal:'data/images/src/but_del.png'
+			background_down:'data/images/src/but_del_down.png'
+			on_release:root.dispatch('on_delete')
+
+<TaskWidgetContainer@ScrollView>:
+    scroll_type: ['bars', 'content']
+    scroll_wheel_distance: dp(114)
+    bar_width: dp(10)
+    do_scroll_x: False
+	size_hint_min_x: dp(400)
+    container: container
+    BoxLayout:
+        id: container
+        orientation: 'vertical'
+        size_hint: 1, None
+        height: self.minimum_height # need to set widget height
+		padding:'16dp','16dp','16dp','16dp'
+		spacing:'16dp'

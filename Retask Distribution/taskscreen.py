@@ -1,17 +1,17 @@
-from kivy.app import App
-from kivy.core.window import Window
-from kivy.properties import ObjectProperty, BooleanProperty, ListProperty, StringProperty, OptionProperty, ConfigParserProperty
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.gridlayout import GridLayout
-from kivy.uix.scrollview import ScrollView
-from kivy.uix.popup import Popup
-from kivy.uix.label import Label
-from kivy.uix.screenmanager import Screen
-
-from taskfunctions import TaskCollection
 import re
 
-# Todo add a way switch to screen/view of completed tasks so they can be marked incomplete
+from kivy.app import App
+from kivy.core.window import Window
+from kivy.properties import ObjectProperty, BooleanProperty, ListProperty, StringProperty
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.label import Label
+from kivy.uix.popup import Popup
+from kivy.uix.screenmanager import Screen
+from kivy.uix.scrollview import ScrollView
+
+from taskfunctions import TaskCollection
+
+
 # Todo (optional) add in ability to show tasks for next days, weeks, or months tasks
 # Add in a day selector that changes the 'today' and refreshes the hidden tasks. Reset with another time
 class TaskScreen(Screen):
@@ -30,7 +30,7 @@ class TaskScreen(Screen):
             taskwidget = self.add_taskwidget(task, task_out=False)
 
     def archive_task(self, instance):
-#         # print(self.task_collection.tasks, instance.task.text)
+        #         # print(self.task_collection.tasks, instance.task.text)
         self.task_collection.archive_task(instance.task)
         self.task_widgets.remove(instance)
         self.set_layout()
@@ -60,7 +60,10 @@ class TaskScreen(Screen):
         if instance.task in self.task_collection.scheduled_tasks:
             instance.opacity = 1
             self.task_collection.scheduled_tasks.remove(instance.task)
-            instance.ids['btn_complete'].background_normal, instance.ids['btn_complete'].background_down =  instance.ids['btn_complete'].background_down, instance.ids['btn_complete'].background_normal
+            instance.ids['btn_complete'].background_normal, instance.ids['btn_complete'].background_down = instance.ids[
+                                                                                                               'btn_complete'].background_down, \
+                                                                                                           instance.ids[
+                                                                                                               'btn_complete'].background_normal
             # make a normal task
         else:
             self.task_collection.schedule_task(instance.task)
@@ -84,10 +87,10 @@ class TaskScreen(Screen):
                 if task_w.task in self.task_collection.scheduled_tasks:
                     task_w.opacity = 1
                     task_w.ids['btn_complete'].background_normal, task_w.ids['btn_complete'].background_down = \
-                    task_w.ids[
-                        'btn_complete'].background_down, \
-                    task_w.ids[
-                        'btn_complete'].background_normal
+                        task_w.ids[
+                            'btn_complete'].background_down, \
+                        task_w.ids[
+                            'btn_complete'].background_normal
                     delete_list.append(task_w)
             [self.archive_task(task_w2) for task_w2 in delete_list]
 
@@ -121,7 +124,7 @@ class TaskScreen(Screen):
         for task_w in self.task_widgets:
             if task_w.task not in filtered_tasks:
                 self.hidden_task_widgets.append(task_w)
-        TaskWidget().hideshow_widget(False,*self.hidden_task_widgets)
+        TaskWidget().hideshow_widget(False, *self.hidden_task_widgets)
 
     def set_layout(self, *args):
         [child.container.clear_widgets() for child in self.ids['task_container_section'].children]
@@ -154,20 +157,21 @@ class TaskScreen(Screen):
                 task_w.show_freq_lbl = True
                 task_w.show_group_lbl = True
                 self.ids['task_container_section'].children[-1].ids['container'].add_widget(task_w)
-        if self.ids['task_container_section'].width == 100:
-            self.ids['task_container_section']._trigger_layout()
-        if  Window.size[0]/len(self.ids['task_container_section'].children) < 80:
-            # App.get_running_app().layout = 'List'
-            self.ids['task_container_section'].rows = 6
-            # self.ids['task_container_section'].cols = 1
-        elif Window.size[0]/len(self.ids['task_container_section'].children) < 150:
-            self.ids['task_container_section'].rows = 3
-        elif Window.size[0]/len(self.ids['task_container_section'].children) < 300:
-            self.ids['task_container_section'].rows = 2
-        else:
-            self.ids['task_container_section'].rows = 1
+        if len(self.ids['task_container_section'].children) != 0:
+            if self.ids['task_container_section'].width == 100:
+                self.ids['task_container_section']._trigger_layout()
+            if Window.size[0] / len(self.ids['task_container_section'].children) < 80:
+                # App.get_running_app().layout = 'List'
+                self.ids['task_container_section'].rows = 6
+                # self.ids['task_container_section'].cols = 1
+            elif Window.size[0] / len(self.ids['task_container_section'].children) < 150:
+                self.ids['task_container_section'].rows = 3
+            elif Window.size[0] / len(self.ids['task_container_section'].children) < 300:
+                self.ids['task_container_section'].rows = 2
+            else:
+                self.ids['task_container_section'].rows = 1
         self.ids['task_container_section']._trigger_layout()
-        print(Window.size[0]/len(self.ids['task_container_section'].children))
+        # print(Window.size[0] / len(self.ids['task_container_section'].children))
 
     def on_touch_down(self, touch):
         for container in self.ids['task_container_section'].children:
@@ -210,6 +214,7 @@ class TopBar(BoxLayout):
     def on_show_complete_tasks(self):
         pass
 
+
 class TaskWidgetContainer(ScrollView):
     container = ObjectProperty()
 
@@ -246,7 +251,7 @@ class TaskWidget(BoxLayout):
         ]
 
     def on_keyboard(self, window, key, scancode, codepoint, modifier):
-#         # print(key, codepoint, modifier)
+        #         # print(key, codepoint, modifier)
         if self.edit and key == 27:  # escape
             self.edit = not self.edit
         # Delete doesn't work well when you try and delete several tasks in a row
@@ -266,11 +271,11 @@ class TaskWidget(BoxLayout):
         self.ids['group_spin'].text = self.task.group
         if self.ids['task_input'].text == '' and self.task.frequency == 'One-Time' and self.task.group == 'None':
             # This is a new task
-            self.hideshow_widget(True,*self.edit_wid_list)
+            self.hideshow_widget(True, *self.edit_wid_list)
             self.edit = True
         else:
             # This is a reloaded task
-            self.hideshow_widget(True,*self.norm_wid_list)
+            self.hideshow_widget(True, *self.norm_wid_list)
             self.edit = False
 
     def on_edit(self, instance, value):
@@ -281,8 +286,8 @@ class TaskWidget(BoxLayout):
             self.ids['group_spin'].values = self.group_list
             self.ids['task_input'].focus = True
             # self.height = '110dp'
-            self.hideshow_widget(True,*self.edit_wid_list)
-            self.hideshow_widget(False,*self.norm_wid_list)
+            self.hideshow_widget(True, *self.edit_wid_list)
+            self.hideshow_widget(False, *self.norm_wid_list)
         else:
             # display mode
             self.task.text = self.ids['task_input'].text
@@ -291,23 +296,22 @@ class TaskWidget(BoxLayout):
             self.ids['task_input'].disabled = True
             self.ids['task_input'].focus = False
             App.get_running_app().store_data(clear_archive=False)
-            self.hideshow_widget(False,*self.edit_wid_list)
-            self.hideshow_widget(True,*self.norm_wid_list)
+            self.hideshow_widget(False, *self.edit_wid_list)
+            self.hideshow_widget(True, *self.norm_wid_list)
             # self.height = '50dp'
         App.get_running_app().screenmanager.get_screen('screen-task').set_layout()
         self._trigger_layout()
-
 
     def on_show_freq_lbl(self, instance, value):
         if int(value) == True:
             if self.ids['lbl_freq'] not in self.norm_wid_list:
                 self.norm_wid_list.append(self.ids['lbl_freq'])
             # show frequency label
-            self.hideshow_widget(True, self.ids['lbl_freq']) # shows
+            self.hideshow_widget(True, self.ids['lbl_freq'])  # shows
         else:
-            if self.ids['lbl_freq'] in self.norm_wid_list: # False
+            if self.ids['lbl_freq'] in self.norm_wid_list:  # False
                 self.norm_wid_list.remove(self.ids['lbl_freq'])
-            self.hideshow_widget(False, self.ids['lbl_freq']) # hides
+            self.hideshow_widget(False, self.ids['lbl_freq'])  # hides
 
     def on_show_group_lbl(self, instance, value):
         # print(self,instance,value)
@@ -315,12 +319,13 @@ class TaskWidget(BoxLayout):
             if self.ids['lbl_group'] not in self.norm_wid_list:
                 self.norm_wid_list.append(self.ids['lbl_group'])
             # show group label
-            self.hideshow_widget(True, self.ids['lbl_group']) # shows
+            self.hideshow_widget(True, self.ids['lbl_group'])  # shows
         else:
-            if self.ids['lbl_group'] in self.norm_wid_list: # False
+            if self.ids['lbl_group'] in self.norm_wid_list:  # False
                 self.norm_wid_list.remove(self.ids['lbl_group'])
-            self.hideshow_widget(False, self.ids['lbl_group']) # hides
-#             # print('hiding g lable')
+            self.hideshow_widget(False, self.ids['lbl_group'])  # hides
+
+    #             # print('hiding g lable')
 
     def frequency_changed(self):
         self.task.frequency = self.ids['freq_spin'].text
@@ -352,7 +357,7 @@ class TaskWidget(BoxLayout):
     def hideshow_widget(self, show=True, *args):
         '''Toggles view state of the passed widgets'''
         for wid in args:
-#             # print('Id: ',wid)
+            #             # print('Id: ',wid)
             if hasattr(wid, 'saved_attrs') and show is True:
                 wid.height, wid.size_hint_y, wid.opacity = wid.saved_attrs
                 del wid.saved_attrs
@@ -376,6 +381,7 @@ class DeleteTaskPopup(Popup):
 
     def on_dismiss(self):
         return self
+
 
 class ManageGroupPopup(Popup):
     # Properties
@@ -426,6 +432,7 @@ class ManageGroupPopup(Popup):
             group_w.ids['grp_input'].disabled = True
             group_w.remove_widget(group_w.but_del)
         self.ids['container'].add_widget(group_w)
+
 
 class GroupWidget(BoxLayout):
     group = StringProperty('')

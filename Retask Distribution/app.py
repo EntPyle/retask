@@ -1,4 +1,4 @@
-from kivy.config import Config, ConfigParser
+from kivy.config import Config
 
 Config.set('input', 'mouse', 'mouse,multitouch_on_demand')
 Config.set('graphics', 'window_state', 'maximized')
@@ -9,7 +9,7 @@ from kivy.lang.builder import Builder
 from kivy.uix.settings import SettingsWithTabbedPanel
 from kivy.core.window import Window
 from kivy.uix.screenmanager import ScreenManager, SwapTransition
-from kivy.properties import StringProperty, BooleanProperty, ListProperty
+from kivy.properties import StringProperty
 from taskscreen import TaskScreen
 from ruamel.yaml import YAML
 from pathlib import Path
@@ -24,8 +24,8 @@ Builder.load_file('topbar.kv')
 Builder.load_file('taskwidget.kv')
 Builder.load_file('retask.kv')
 
-class retaskApp(App):
 
+class retaskApp(App):
     font_size = StringProperty('')
     layout = StringProperty('')
 
@@ -72,7 +72,7 @@ class retaskApp(App):
             if key == "font_size":
                 print('font changed')
                 self.font_size = str(value)
-            elif key =="layout_setting":
+            elif key == "layout_setting":
                 self.layout = str(value)
                 self.taskscreen.set_layout()
 
@@ -80,15 +80,14 @@ class retaskApp(App):
         # print(codepoint, modifier)
         if 'ctrl' in modifier and codepoint == 'q':
             self.stop()
-        if 'ctrl' in modifier and codepoint =='g':
+        if 'ctrl' in modifier and codepoint == 'g':
             self.taskscreen.manage_groups_popup()
         if 'ctrl' in modifier and codepoint == 'n':
             self.taskscreen.new_task()
         if 'ctrl' in modifier and codepoint == 'z':
             self.taskscreen.recover_task()
-        if 'ctrl' in modifier and codepoint =='f':
+        if 'ctrl' in modifier and codepoint == 'f':
             self.taskscreen.ids['top_bar'].ids['search_box'].ids['search_input'].focus = True
-
 
     def store_data(self, clear_archive=True):
         if clear_archive:

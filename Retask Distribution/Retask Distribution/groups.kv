@@ -1,0 +1,50 @@
+<ManageGroupPopup@Popup>:
+	size_hint: 0.4, 0.8
+	title: 'Group Manager'
+	separator_height: 0
+	BoxLayout:
+		orientation: 'vertical'
+		spacing: '12dp'
+		TodoInput:
+			id: new_grp_input
+			hint_text: 'Type Group Name and Press Enter'
+			text_size: self.size
+			multiline: False
+			size_hint_y: None
+			padding: '8dp'
+			on_text_validate: root.dispatch('on_new_group')
+		ScrollView:
+		    GridLayout:
+                id: container
+                cols: 1
+
+<GroupWidget@BoxLayout>:
+    id: group_w
+    orientation: 'horizontal'
+    but_del:but_del
+    size_hint_y: None
+    height: '44dp'
+    padding: 8, 0, 8, 0
+    canvas:
+        Color:
+            rgba: 0.925, 0.941, 0.937, 1.0
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: 4,4,4,4
+    TodoInput:
+        id: grp_input
+        size_hint: 0.9, 0.8
+        center_y: .5
+        text: root.group
+        multiline: False
+        on_focus: root.dispatch('on_change_focus')
+    TodoButton:
+        id: but_del
+        pos_hint: {'right': 1}
+        size_hint: None, 0.8
+        width: self.height
+        border:8,8,8,8
+        background_normal:'data/images/src/but_del.png'
+        background_down:'data/images/src/but_del_down.png'
+        on_release:root.dispatch('on_delete_group')

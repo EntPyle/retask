@@ -1,0 +1,38 @@
+!TaskCollection
+count: 3
+tasks:
+- !Task
+  id: 1
+  _text: Buy milk
+  _init_time: &id001 2019-07-21
+  _edit_time: 2019-07-21
+  _refresh_time: *id001
+  _group: None
+  _frequency: One-Time
+  _due_date:
+  _day_name: Monday
+- !Task
+  id: 2
+  _text: Update conda environment
+  _init_time: &id002 2019-07-21
+  _edit_time: 2019-07-21
+  _refresh_time: *id002
+  _group: Programming
+  _frequency: Weekly
+  _due_date: 2019-07-22
+  _day_name: Monday
+- !Task
+  id: 3
+  _text: New Task
+  _init_time: &id003 2019-07-21
+  _edit_time: 2019-07-21
+  _refresh_time: *id003
+  _group: None
+  _frequency: One-Time
+  _due_date:
+  _day_name: Monday
+group_list:
+- None
+- Programming
+archived_tasks: []
+scheduled_tasks: []
