@@ -18,7 +18,7 @@ def _get_next_day_of(target_type: str = 'weekday', next_day_name: str = 'Monday'
             return today + dt.timedelta(days=1)
         elif tt == 'weekday':
             # return next weekday
-            if today.weekday() <= 4:
+            if today.weekday() < 4:
                 return today + dt.timedelta(days=1)
             else:
                 return today + dt.timedelta(days=3)
@@ -28,12 +28,8 @@ def _get_next_day_of(target_type: str = 'weekday', next_day_name: str = 'Monday'
         elif tt == 'month':
             # return date of first weekday in next month
             for day in cal.Calendar().itermonthdays2(today.year, today.month + 1):
-                if day[0] == 0:  # day in previous month
-                    continue
-                elif day[1] == next_day:  # day is target weekday
+                if day[1] < 5:  # day is target weekday
                     break
-                else:
-                    continue
             return today.replace(month=today.month + 1, day=day[0])
         elif tt == 'quarter':
             # change month of 'today' to last month of current quarter
